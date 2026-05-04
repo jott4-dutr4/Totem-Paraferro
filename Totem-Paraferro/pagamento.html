@@ -5,445 +5,588 @@
   Aqui o cliente vê o resumão na lateral e escolhe como vai pagar. 
   Esta tela tem o botão mais importante do sistema: "CONCLUIR COMPRA", 
   que joga de fato tudo para o banco de dados e gera a venda.
+
+  📐 RESPONSIVIDADE:
+  - Smartphone (portrait / landscape)  → coluna única, footer fixo
+  - Tablet / Notebook (≥ 768px)        → 2 colunas lado a lado
+  - Totem vertical 1080×1920           → coluna única ampliada, botões grandes para toque
 -->
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Totem Paraferro - Autoatendimento (Pagamento)</title>
-    
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet" />
-    <!-- SUPABASE CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="css/output.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="
-    text-blue-900
-    h-screen
-    overflow-hidden
-    select-none
-    bg-slate-50
-  ">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Totem Paraferro - Autoatendimento (Pagamento)</title>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet" />
+  <!-- SUPABASE CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/output.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* ── Fundação ─────────────────────────────────────────────── */
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f1f5f9;
+      color: #1e3a5f;
+      overflow: hidden;
+    }
+
+    /* ── Animação de entrada ──────────────────────────────────── */
+    .fade-in {
+      animation: fadeIn 0.35s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Scrollbar fina ───────────────────────────────────────── */
+    .slim-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .slim-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .slim-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 99px;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+         BOTÕES DE MÉTODO DE PAGAMENTO
+         ══════════════════════════════════════════════════════════ */
+
+    /* Base: mobile-first (smartphone portrait) */
+    .btn-pagamento {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      background: #ffffff;
+      border: 2.5px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 18px 20px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-pagamento:hover,
+    .btn-pagamento:focus-visible {
+      border-color: #1e3a8a;
+      box-shadow: 0 4px 18px rgba(30, 58, 138, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .btn-pagamento:active {
+      transform: scale(0.97);
+    }
+
+    /* Selecionado: destaque azul */
+    .btn-pagamento.selecionado {
+      border-color: #1d4ed8;
+      background: #eff6ff;
+      box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.12), 0 4px 18px rgba(30, 58, 138, 0.18);
+    }
+
+    /* Ícone wrapper */
+    .pag-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-pagamento:hover .pag-icon-wrap {
+      transform: scale(1.1);
+    }
+
+    /* Textos */
+    .pag-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1e3a5f;
+      line-height: 1.2;
+    }
+
+    .pag-sub {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #3b82f6;
+      background: #dbeafe;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    .pag-sub.verde {
+      color: #16a34a;
+      background: #dcfce7;
+    }
+
+    /* Seta de navegação */
+    .pag-arrow {
+      color: #94a3b8;
+      transition: color 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-pagamento:hover .pag-arrow {
+      color: #1e3a8a;
+      transform: translateX(3px);
+    }
+
+    /* ══════════════════════════════════════════════════════════
+         FOOTER (rodapé com botões Voltar / Concluir)
+         ══════════════════════════════════════════════════════════ */
+    .footer-pagamento {
+      background: #ffffff;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      flex-shrink: 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .btn-voltar {
+      background: #f1f5f9;
+      color: #1e3a5f;
+      border: 2px solid #cbd5e1;
+      font-weight: 900;
+      border-radius: 16px;
+      padding: 16px 22px;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-voltar:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    .btn-voltar:active {
+      transform: scale(0.97);
+    }
+
+    .btn-concluir {
+      flex: 1;
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+      color: #ffffff;
+      font-weight: 900;
+      border-radius: 16px;
+      padding: 16px 24px;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 6px 24px rgba(29, 78, 216, 0.35);
+      transition: all 0.22s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-concluir:hover:not(:disabled) {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      box-shadow: 0 8px 30px rgba(29, 78, 216, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-concluir:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .btn-concluir:disabled {
+      background: #e2e8f0;
+      color: #94a3b8;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+         PAINEL RESUMO DO PEDIDO
+         ══════════════════════════════════════════════════════════ */
+    .painel-resumo {
+      background: #ffffff;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .painel-resumo-header {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: #1e3a5f;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .resumo-linha {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #64748b;
+      padding: 4px 0;
+    }
+
+    .resumo-total-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #1e3a5f;
+      padding-top: 14px;
+      margin-top: 12px;
+      border-top: 2px solid #e2e8f0;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+         CABEÇALHO
+         ══════════════════════════════════════════════════════════ */
+    .pag-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+         RESPONSIVIDADE
+         Tablet / Notebook ≥ 768px → layout 2 colunas
+         ══════════════════════════════════════════════════════════ */
+    @media (min-width: 768px) {
+      .pag-icon-wrap {
+        width: 60px;
+        height: 60px;
+      }
+
+      .pag-title {
+        font-size: 1.1rem;
+      }
+
+      .pag-sub {
+        font-size: 0.78rem;
+      }
+
+      .btn-pagamento {
+        padding: 20px 24px;
+        border-radius: 20px;
+      }
+
+      .btn-voltar {
+        padding: 18px 28px;
+        font-size: 0.9rem;
+        border-radius: 18px;
+      }
+
+      .btn-concluir {
+        padding: 18px 32px;
+        font-size: 1.1rem;
+        border-radius: 18px;
+      }
+
+      .footer-pagamento {
+        padding: 18px 32px;
+        gap: 16px;
+      }
+
+      .pag-header {
+        padding: 14px 32px;
+      }
+
+      .painel-resumo-header {
+        font-size: 1.15rem;
+        padding: 22px 28px 18px;
+      }
+
+      .resumo-linha {
+        font-size: 0.88rem;
+      }
+
+      .resumo-total-line {
+        font-size: 1.9rem;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+         Totem vertical ≥ 1024px / portrait-heavy
+         ══════════════════════════════════════════════════════════ */
+    @media (min-width: 1024px) {
+      .pag-icon-wrap {
+        width: 64px;
+        height: 64px;
+      }
+
+      .pag-title {
+        font-size: 1.2rem;
+      }
+
+      .btn-pagamento {
+        padding: 24px 28px;
+        border-radius: 22px;
+      }
+
+      .btn-voltar {
+        padding: 20px 32px;
+        font-size: 1rem;
+        border-radius: 20px;
+      }
+
+      .btn-concluir {
+        padding: 20px 36px;
+        font-size: 1.15rem;
+        border-radius: 20px;
+      }
+
+      .footer-pagamento {
+        padding: 20px 40px;
+        gap: 18px;
+      }
+
+      .pag-header {
+        padding: 16px 40px;
+      }
+
+      .painel-resumo-header {
+        font-size: 1.2rem;
+      }
+
+      .resumo-total-line {
+        font-size: 2.1rem;
+      }
+    }
+  </style>
+</head>
+
+<body style="height:100dvh; display:flex; flex-direction:column; overflow:hidden;">
+
+  <!-- ════════════════════════════════════════
+         CABEÇALHO  
+    ════════════════════════════════════════════ -->
+  <header class="pag-header">
+    <div>
+      <h1 class="text-base sm:text-xl md:text-2xl font-black text-blue-900 leading-tight">
+        Pagamento
+      </h1>
+      <p class="text-[9px] sm:text-xs text-slate-500 uppercase font-bold tracking-widest mt-0.5">
+        Escolha como pagar
+      </p>
+    </div>
+    <img src="https://i.postimg.cc/RCfJNQY9/logoparaferro.png" alt="Logo Paraferro"
+      class="h-9 sm:h-11 md:h-14 w-auto object-contain" />
+  </header>
+
+  <!-- ════════════════════════════════════════
+         CORPO PRINCIPAL (scroll)
+    ════════════════════════════════════════════ -->
+  <main id="main-content" class="flex-1 overflow-y-auto slim-scroll fade-in" style="padding-bottom: 0;">
+    <!-- Grid: 1 col mobile → 2 cols tablet+ -->
     <div class="
-    flex
-    h-full
-    w-full
-    bg-slate-50
-    overflow-hidden
-  ">
-      <div class="
-    flex-1
-    relative
-    bg-slate-50
-    overflow-y-auto
-  " id="main-content">
-        <section id="screen-pagamento" class="
-    h-full
-    flex
-    flex-col
-    fade-in
-    bg-slate-50
-    w-full
-    max-w-6xl
-    mx-auto
-  ">
-          <div class="
-    flex-1
-    overflow-y-auto
-    p-6
-    md:p-12
-  ">
-            <div class="
-    max-w-6xl
-    mx-auto
-    grid
-    grid-cols-1
-    lg:grid-cols-2
-    gap-10
-  ">
-              <div class="space-y-6">
-                <div>
-                  <h2 id="header-pagamento" class="
-    text-3xl
-    font-black
-    text-blue-900
-    mb-2
-  ">
-                    Escolha como pagar
-                  </h2>
-                  <p class="
-    text-slate-500
-    text-sm
-    font-medium
-    mb-6
-  ">
-                    Selecione uma forma de pagamento para o valor total de
-                    <span id="pag-texto-total" class="
-    font-bold
-    text-blue-900
-  ">R$ 0,00</span>.
-                  </p>
-                </div>
+        grid
+        grid-cols-1
+        md:grid-cols-2
+        gap-5
+        md:gap-8
+        p-4 sm:p-6 md:p-8 lg:p-10
+        max-w-5xl
+        mx-auto
+        w-full
+      ">
 
-                <div class="space-y-4">
-                  <!-- ⚡ EVENTO IMPORTANTE: Cada botão chama selecionarPagamento passando um texto para o app.js guardar no estado (memória). -->
-                  <button
-                    onclick="selecionarPagamento('PIX')"
-                    id="btn-pag-pix"
-                    class="
-    btn-pagamento
-    w-full
-    bg-white
-    border-2
-    border-slate-300
-    p-5
-    rounded-2xl
-    flex
-    items-center
-    justify-between
-    hover:border-blue-900
-    transition-all
-    text-left
-    group
-    shadow-sm
-    active:scale-95
-  "
-                  >
-                    <div class="
-    flex
-    items-center
-    gap-4
-  ">
-                      <div class="
-    bg-[#E2F9F8]
-    w-12
-    h-12
-    rounded-full
-    group-hover:scale-110
-    transition-transform
-    flex
-    items-center
-    justify-center
-  ">
-                        <i class="
-    fa-brands
-    fa-pix
-    text-[24px]
-    text-[#32BCAD]
-  "></i>
-                      </div>
-                      <div>
-                        <p class="
-    font-bold
-    text-blue-900
-    text-lg
-    leading-tight
-  ">Pix</p>
-                        <p class="
-    text-[11px]
-    text-blue-700
-    font-bold
-    mt-1
-    bg-blue-100
-    inline-block
-    px-2
-    py-0.5
-    rounded
-    uppercase
-    tracking-wider
-  ">
-                          Aprovação imediata
-                        </p>
-                      </div>
-                    </div>
-                    <i data-lucide="chevron-right" class="
-    text-slate-400
-    group-hover:text-blue-900
-  "></i>
-                  </button>
+      <!-- ────────────────────────────────────
+             COLUNA ESQUERDA: Métodos de pagamento
+        ──────────────────────────────────────── -->
+      <section class="space-y-4" aria-label="Métodos de pagamento">
 
-                  <button
-                    onclick="selecionarPagamento('Cartão de Crédito')"
-                    id="btn-pag-credito"
-                    class="
-    btn-pagamento
-    w-full
-    bg-white
-    border-2
-    border-slate-300
-    p-5
-    rounded-2xl
-    flex
-    items-center
-    justify-between
-    hover:border-blue-900
-    transition-all
-    text-left
-    group
-    shadow-sm
-  "
-                  >
-                    <div class="
-    flex
-    items-center
-    gap-4
-  ">
-                      <div class="
-    text-blue-600
-    bg-blue-50
-    p-3
-    rounded-full
-    group-hover:scale-110
-    transition-transform
-  ">
-                        <i data-lucide="credit-card" class="
-    w-6
-    h-6
-  "></i>
-                      </div>
-                      <div>
-                        <p class="
-    font-bold
-    text-blue-900
-    text-lg
-    leading-tight
-  ">
-                          Cartão de Crédito
-                        </p>
-                        <p class="
-    text-xs
-    text-slate-500
-    font-medium
-    mt-1
-  ">
-                          Pague aproximando ou inserindo
-                        </p>
-                      </div>
-                    </div>
-                    <i data-lucide="chevron-right" class="
-    text-slate-400
-    group-hover:text-blue-900
-  "></i>
-                  </button>
+        <div class="mb-2">
+          <h2 id="header-pagamento" class="text-xl sm:text-2xl md:text-3xl font-black text-blue-900 mb-1">
+            Como vai pagar?
+          </h2>
+          <p class="text-slate-500 text-xs sm:text-sm font-medium">
+            Valor total:
+            <span id="pag-texto-total" class="font-bold text-blue-900">R$ 0,00</span>
+          </p>
+        </div>
 
-                  <button
-                    onclick="selecionarPagamento('Cartão de Débito')"
-                    id="btn-pag-debito"
-                    class="
-    btn-pagamento
-    w-full
-    bg-white
-    border-2
-    border-slate-300
-    p-5
-    rounded-2xl
-    flex
-    items-center
-    justify-between
-    hover:border-blue-900
-    transition-all
-    text-left
-    group
-    shadow-sm
-  "
-                  >
-                    <div class="
-    flex
-    items-center
-    gap-4
-  ">
-                      <div class="
-    relative
-    text-blue-600
-    bg-blue-50
-    p-3
-    rounded-full
-    group-hover:scale-110
-    transition-transform
-  ">
-                        <i data-lucide="credit-card" class="
-    w-6
-    h-6
-  "></i>
-                        <span class="
-    absolute
-    inset-0
-    flex
-    items-center
-    justify-center
-    text-[6px]
-    font-extrabold
-    text-green-600
-    mt-1
-  ">$</span>
-                      </div>
-                      <div>
-                        <p class="
-    font-bold
-    text-blue-900
-    text-lg
-    leading-tight
-  ">
-                          Cartão de Débito
-                        </p>
-                        <p class="
-    text-xs
-    text-slate-500
-    font-medium
-    mt-1
-  ">
-                          Débito direto na conta
-                        </p>
-                      </div>
-                    </div>
-                    <i data-lucide="chevron-right" class="
-    text-slate-400
-    group-hover:text-blue-900
-  "></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- ========================================== -->
-              <!-- COLUNA DIREITA: RESUMO DO PEDIDO           -->
-              <!-- ========================================== -->
-              <div class="lg:pl-10">
-                <div class="
-    bg-white
-    p-6
-    rounded-3xl
-    border
-    border-slate-200
-    shadow-xl
-    h-full
-    flex
-    flex-col
-  ">
-                  <h3 class="
-    text-xl
-    font-black
-    mb-6
-    text-blue-900
-    border-b
-    border-slate-100
-    pb-4
-  ">
-                    Resumo do pedido
-                  </h3>
-
-                  <div id="resumo-itens" class="
-    space-y-4
-    mb-6
-    flex-1
-    overflow-y-auto
-    pr-2
-    custom-scrollbar
-  "></div>
-
-                  <div class="
-    border-t
-    border-slate-100
-    pt-6
-    space-y-3
-  ">
-                    <div class="
-    flex
-    justify-between
-    text-slate-600
-    text-sm
-    font-bold
-  ">
-                      <span>Total em produtos</span>
-                      <span id="resumo-subtotal" class="text-blue-900">R$ 0.00</span>
-                    </div>
-                    <div class="
-    flex
-    justify-between
-    text-slate-600
-    text-sm
-    font-bold
-  ">
-                      <span>Entrega / Retirada</span>
-                      <span class="text-green-600">Grátis</span>
-                    </div>
-                    <div class="
-    flex
-    justify-between
-    items-center
-    text-blue-900
-    text-3xl
-    font-black
-    mt-4
-    pt-4
-    border-t
-    border-slate-200
-  ">
-                      <span>Total</span>
-                      <span id="resumo-total-final">R$ 0.00</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <!-- ⚡ PIX -->
+        <button onclick="selecionarPagamento('PIX')" id="btn-pag-pix" class="btn-pagamento">
+          <div class="flex items-center gap-4">
+            <div class="pag-icon-wrap" style="background:#e0f9f7;">
+              <i class="fa-brands fa-pix" style="font-size:26px; color:#32BCAD;"></i>
+            </div>
+            <div>
+              <p class="pag-title">Pix</p>
+              <span class="pag-sub">Aprovação imediata</span>
             </div>
           </div>
+          <i data-lucide="chevron-right" class="pag-arrow w-5 h-5"></i>
+        </button>
 
-          <div class="
-    bg-white
-    border-t
-    border-slate-200
-    p-6
-    flex
-    gap-4
-    z-30
-    shrink-0
-    shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]
-  ">
-            <button
-              onclick="window.location.href='resumo.html'"
-              class="
-    btn-secondary
-    hover:bg-slate-200
-  "
-            >
-              VOLTAR
-            </button>
-            
-            <!-- ⚡ BOTÃO DE AÇÃO PRINCIPAL -->
-            <!-- Começa desabilitado (disabled). Só liga quando o usuário clica em alguma forma de pagamento -->
-            <!-- Ao clicar, chama finalizarVenda() no app.js, onde a mágica do banco de dados acontece. -->
-            <button
-              onclick="finalizarVenda()"
-              id="btn-finalizar-venda-novo"
-              class="
-    btn-primary
-    hover:bg-blue-800
-    disabled:bg-slate-200
-    disabled:text-slate-400
-    disabled:shadow-none
-    flex-[2]
-  "
-              disabled
-            >
-              <span id="btn-finalizar-texto">CONCLUIR COMPRA</span>
-            </button>
+        <!-- ⚡ CARTÃO DE CRÉDITO -->
+        <button onclick="selecionarPagamento('Cartão de Crédito')" id="btn-pag-credito" class="btn-pagamento">
+          <div class="flex items-center gap-4">
+            <div class="pag-icon-wrap" style="background:#eff6ff;">
+              <i data-lucide="credit-card" class="w-7 h-7" style="color:#2563eb;"></i>
+            </div>
+            <div>
+              <p class="pag-title">Cartão de Crédito</p>
+              <p class="text-xs text-slate-500 font-medium mt-1">
+                Pague aproximando ou inserindo
+              </p>
+            </div>
           </div>
-        </section>
-      </div>
-    </div>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/app.js"></script>
-    <script>
-      lucide.createIcons();
-      window.onload = function() {
-          carregarSessao();          // Carrega carrinho e estado da sessão
-          carregarCarrinhoDaSessao(); // Restaura o carrinho
-          atualizarResumoPedidoUI(); // Pinta os valores de Total e a lista de itens
-          iniciarTimerInatividade(); // Timer de inatividade (30s)
-      };
-    </script>
-  </body>
+          <i data-lucide="chevron-right" class="pag-arrow w-5 h-5"></i>
+        </button>
+
+        <!-- ⚡ CARTÃO DE DÉBITO -->
+        <button onclick="selecionarPagamento('Cartão de Débito')" id="btn-pag-debito" class="btn-pagamento">
+          <div class="flex items-center gap-4">
+            <div class="pag-icon-wrap" style="background:#f0fdf4;">
+              <i data-lucide="credit-card" class="w-7 h-7" style="color:#16a34a;"></i>
+            </div>
+            <div>
+              <p class="pag-title">Cartão de Débito</p>
+              <p class="text-xs text-slate-500 font-medium mt-1">
+                Débito direto na conta
+              </p>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="pag-arrow w-5 h-5"></i>
+        </button>
+
+
+      </section>
+
+      <!-- ────────────────────────────────────
+             COLUNA DIREITA: Resumo do pedido
+             Em mobile fica embaixo; em tablet+ fica ao lado
+        ──────────────────────────────────────── -->
+      <aside aria-label="Resumo do pedido">
+        <div class="painel-resumo h-full">
+          <h3 class="painel-resumo-header">
+            🧾 Resumo do pedido
+          </h3>
+
+          <!-- Itens dinâmicos (injetados pelo app.js) -->
+          <div id="resumo-itens" class="slim-scroll flex-1 overflow-y-auto px-6 py-4 space-y-3"
+            style="min-height: 80px; max-height: 280px;"></div>
+
+          <!-- Totais -->
+          <div class="px-6 pb-6 pt-4 border-t border-slate-100 space-y-2">
+            <div class="resumo-linha">
+              <span>Total em produtos</span>
+              <span id="resumo-subtotal" class="text-blue-900">R$ 0,00</span>
+            </div>
+            <div class="resumo-linha">
+              <span>Entrega / Retirada</span>
+              <span style="color:#16a34a;">Grátis</span>
+            </div>
+            <div class="resumo-total-line">
+              <span>Total</span>
+              <span id="resumo-total-final">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div><!-- /grid -->
+  </main>
+
+  <!-- ════════════════════════════════════════
+         FOOTER FIXO: Voltar + Concluir
+    ════════════════════════════════════════════ -->
+  <footer class="footer-pagamento">
+    <button onclick="window.location.href='resumo.html'" class="btn-voltar" id="btn-voltar-pagamento">
+      ← Voltar
+    </button>
+
+    <!-- 
+        Começa desabilitado. Só ativa após o usuário selecionar um método.
+        Ao clicar, chama finalizarVenda() no app.js.
+      -->
+    <button onclick="finalizarVenda()" id="btn-finalizar-venda-novo" class="btn-concluir" disabled>
+      <span id="btn-finalizar-texto">✔ CONCLUIR COMPRA</span>
+    </button>
+  </footer>
+
+  <script src="js/supabase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    lucide.createIcons();
+
+    window.onload = function () {
+      carregarSessao();           // Carrega carrinho e estado da sessão
+      carregarCarrinhoDaSessao(); // Restaura o carrinho
+      atualizarResumoPedidoUI();  // Pinta os valores de Total e a lista de itens
+      iniciarTimerInatividade();  // Timer de inatividade (30s)
+    };
+
+    /* Destaque visual no botão de pagamento selecionado */
+    const _origSelecionarPagamento = (typeof selecionarPagamento === 'function')
+      ? selecionarPagamento : null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnIds = ['btn-pag-pix', 'btn-pag-credito', 'btn-pag-debito', 'btn-pag-dinheiro'];
+
+      btnIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.addEventListener('click', () => {
+          // Remove seleção de todos
+          btnIds.forEach(bid => {
+            document.getElementById(bid)?.classList.remove('selecionado');
+          });
+          // Marca o clicado
+          el.classList.add('selecionado');
+          // Habilita botão concluir
+          const btnConcluir = document.getElementById('btn-finalizar-venda-novo');
+          if (btnConcluir) btnConcluir.disabled = false;
+        });
+      });
+    });
+  </script>
+</body>
+
 </html>
