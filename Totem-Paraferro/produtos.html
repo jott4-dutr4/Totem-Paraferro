@@ -1,314 +1,350 @@
 <!-- 
   📄 ARQUIVO: produtos.html
-  🧠 PROPÓSITO: Tela principal da loja (Catálogo).
-  
-  Aqui o cliente vê quem ele é, busca produtos, adiciona no carrinho 
-  e vê o valor total subindo. Esta tela é fortemente dependente 
-  do Javascript (app.js) para desenhar as "caixinhas" dos produtos.
+  🧠 PROPÓSITO: Tela principal da loja (Catálogo) com Sidebar de Categorias.
 -->
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Totem Paraferro - Autoatendimento (Produtos)</title>
-    
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet" />
-    <!-- SUPABASE CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="css/output.css" />
-  </head>
-  <body class="
-    text-blue-900
-    h-screen
-    overflow-hidden
-    select-none
-    bg-slate-50
-  ">
-    <div class="
-    flex
-    h-full
-    w-full
-    bg-slate-50
-    overflow-hidden
-  ">
-      <div class="
-    flex-1
-    relative
-    bg-slate-50
-    overflow-y-auto
-  " id="main-content">
-        <section id="screen-produtos" class="
-    h-full
-    flex
-    flex-col
-    fade-in
-    bg-slate-50
-  ">
-          <div class="
-    p-4
-    md:p-6
-    bg-white
-    border-b
-    border-slate-200
-    flex
-    justify-between
-    items-center
-    sticky
-    top-0
-    z-30
-    shadow-sm
-  ">
-            <div class="
-    flex
-    items-center
-    gap-3
-  ">
-              <div class="
-    w-10
-    h-10
-    md:w-12
-    h-12
-    bg-blue-100
-    rounded-full
-    flex
-    items-center
-    justify-center
-    text-blue-900
-    shrink-0
-  ">
-                <i data-lucide="user"></i>
-              </div>
-              <div>
-                <h2 class="
-    text-lg
-    md:text-xl
-    font-bold
-    text-blue-900
-    leading-tight
-  " id="display-cliente-nome">
-                  ...
-                </h2>
-                <button onclick="reiniciarTotem()" class="
-    text-[10px]
-    md:text-xs
-    text-red-500
-    uppercase
-    font-bold
-    tracking-widest
-    hover:underline
-    mt-1
-  ">
-                  Sair / Nova Venda
-                </button>
-              </div>
-            </div>
 
-            <img
-              src="https://i.postimg.cc/RCfJNQY9/logoparaferro.png"
-              alt="Logo Paraferro"
-              class="
-    w-32
-    md:w-44
-    absolute
-    top-1/2
-    left-1/2
-    -translate-y-1/2
-    -translate-x-1/2
-    z-50
-  "
-            />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Totem Paraferro - Autoatendimento (Produtos)</title>
 
-            <div class="
-    flex
-    items-center
-    gap-3
-    md:gap-4
-    justify-end
-  ">
-              <button
-                onclick="irParaPagamento()"
-                class="
-    relative
-    p-3
-    md:p-4
-    bg-blue-900
-    text-white
-    rounded-full
-    shadow-lg
-    hover:bg-blue-800
-    active:scale-95
-    transition-all
-    z-50
-  "
-                id="btn-carrinho-topo"
-              >
-                <i data-lucide="shopping-cart" class="
-    w-5
-    h-5
-    md:w-7
-    md:h-7
-  "></i>
-                <span
-                  id="cart-badge"
-                  class="
-    absolute
-    -top-1
-    -right-1
-    bg-red-600
-    text-white
-    text-[10px]
-    font-bold
-    min-w-[20px]
-    h-5
-    md:min-w-[24px]
-    md:h-6
-    flex
-    items-center
-    justify-center
-    rounded-full
-    border-2
-    border-white
-    hidden
-  "
-                >0</span>
-              </button>
-            </div>
-          </div>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet" />
+  <!-- SUPABASE CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="css/output.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
 
-          <div class="
-    flex-1
-    flex
-    flex-col
-    overflow-hidden
-    relative
-  ">
-            <div class="
-    flex-1
-    flex
-    flex-col
-    p-4
-    md:p-6
-    overflow-y-auto
-    bg-slate-50
-  ">
-              <div class="
-    relative
-    mb-6
-    group
-  ">
-                <i data-lucide="search" class="
-    absolute
-    left-5
-    top-1/2
-    -translate-y-1/2
-    text-slate-400
-    group-focus-within:text-blue-900
-    transition-colors
-  "></i>
-                <input
-                  id="search-catalogo"
-                  type="text"
-                  placeholder="O que você está procurando hoje?"
-                  class="
-    w-full
-    pl-14
-    pr-6
-    py-4
-    border-2
-    border-slate-300
-    bg-white
-    text-blue-900
-    shadow-sm
-    rounded-2xl
-    text-base
-    md:text-lg
-    focus:border-blue-900
-    outline-none
-    transition-all
-    placeholder-slate-400
-  "
-                  oninput="filtrarCatalogo(this.value)"
-                />
-              </div>
+  <style>
+    /* ── BARRA LATERAL (SIDEBAR) / TOPO (MOBILE) ── */
+    .sidebar-catalogo {
+      background: #fff;
+      display: flex;
+      z-index: 40;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+      flex-direction: row;
+      width: 100%;
+      border-bottom: 1px solid #e2e8f0;
+      align-items: center;
+      flex-shrink: 0;
+    }
 
-              <!-- Loading spinner -->
-              <div id="loading-produtos" class="
-    flex
-    flex-col
-    items-center
-    justify-center
-    py-20
-    text-blue-900
-  ">
-                  <i data-lucide="loader-2" class="
-    w-8
-    h-8
-    animate-spin
-    mb-4
-  "></i>
-                  <p class="font-bold">Carregando catálogo...</p>
-              </div>
+    @media (min-width: 640px) {
+      .sidebar-catalogo {
+        flex-direction: column;
+        width: 200px;
+        height: 100%;
+        border-right: 1px solid #e2e8f0;
+        border-bottom: none;
+        align-items: stretch;
+      }
+    }
 
-              <div id="grid-catalogo" class="
-    grid
-    grid-cols-2
-    gap-4
-    md:gap-6
-    pb-20
-    hidden
-  "></div>
-            </div>
-          </div>
+    .sidebar-logo-container {
+      display: none;
+    }
+    @media (min-width: 640px) {
+      .sidebar-logo-container {
+        display: flex;
+        padding: 32px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        justify-content: center;
+      }
+    }
 
-          <div class="
-    bg-white
-    border-t-2
-    border-slate-100
-    px-8
-    py-6
-    flex
-    justify-between
-    items-center
-    z-30
-    shrink-0
-    shadow-[0_-10px_30px_-10px_rgba(0,0,0,0.08)]
-  ">
-            <span class="
-    text-2xl
-    md:text-3xl
-    font-black
-    text-blue-900
-    tracking-tight
-  ">Total</span>
-            <span class="
-    text-2xl
-    md:text-3xl
-    font-black
-    text-blue-900
-    tracking-tight
-  ">R$ <span id="cart-total-rodape">0.00</span></span>
-          </div>
-        </section>
-      </div>
+    .sidebar-nav-title {
+      display: none;
+    }
+    @media (min-width: 640px) {
+      .sidebar-nav-title {
+        display: block;
+        font-size: 11px;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin: 24px 24px 12px;
+      }
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex: 1;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 12px 16px;
+      align-items: center;
+    }
+    @media (min-width: 640px) {
+      .sidebar-nav {
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0 16px;
+        align-items: stretch;
+      }
+    }
+
+    .cat-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      padding: 10px 16px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e3a8a;
+      background: #f1f5f9;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    @media (min-width: 640px) {
+      .cat-btn {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 14px 16px;
+        border-radius: 12px;
+        font-size: 15px;
+      }
+    }
+
+    .cat-btn:hover {
+      background: #e2e8f0;
+      color: #1e3a8a;
+    }
+
+    .cat-btn.ativo {
+      background: #1e3a8a;
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+    }
+
+    .sidebar-footer {
+      padding: 0 16px;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (min-width: 640px) {
+      .sidebar-footer {
+        padding: 24px;
+        border-top: 1px solid #f1f5f9;
+        background: #ffffff;
+      }
+    }
+
+    /* ── BARRA CARRINHO ── */
+    .cart-bar {
+      background: #1e3a8a;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+      z-index: 30;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+    }
+
+    .cart-left {
+      display: flex;
+      align-items: center;
+      gap: clamp(12px, 3vw, 16px);
+    }
+
+    .cart-icon-wrap {
+      position: relative;
+    }
+
+    #cart-badge-rodape {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #1e3a8a;
+    }
+
+    .cart-label {
+      color: #93c5fd;
+      font-size: clamp(10px, 2.5vw, 11px);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 0;
+      margin-bottom: 2px;
+    }
+
+    .cart-total {
+      color: #fff;
+      font-size: clamp(16px, 4vw, 20px);
+      font-weight: 900;
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    .cart-btn {
+      position: relative;
+      background: #fff;
+      color: #1e3a8a;
+      font-weight: 900;
+      font-size: clamp(12px, 3vw, 14px);
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: clamp(8px, 2vw, 12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .cart-btn:hover {
+      background: #eff6ff;
+      transform: scale(1.02);
+    }
+
+    .cart-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Custom Scrollbar for sidebar */
+    .sidebar-nav::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar-nav::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 20px;
+    }
+  </style>
+</head>
+
+<body class="text-blue-900 h-screen w-screen overflow-hidden select-none bg-slate-50 flex flex-col sm:flex-row font-sans">
+
+  <!-- ============================================
+       SIDEBAR ESQUERDA (Navegação + Logo + Usuário)
+       ============================================ -->
+  <aside class="sidebar-catalogo">
+    <!-- Logo -->
+    <div class="sidebar-logo-container">
+      <img src="https://i.postimg.cc/RCfJNQY9/logoparaferro.png" alt="Logo Paraferro" class="w-40 object-contain" />
     </div>
-    
-    <script src="js/supabase-config.js"></script>
-    <script src="js/app.js"></script>
-    <script>
-      lucide.createIcons();
-      
-      // ==========================================
-      // 🧠 INICIALIZAÇÃO DA TELA (window.onload)
-      // ==========================================
-      // Assim que todo o HTML for carregado, rodamos essas três funções:
-      window.onload = function() {
-          carregarProdutosDoBanco(); // 1. Vai no Supabase baixar os produtos
-          verificarSessaoCliente();  // 2. Confere se tem alguém logado (se não tiver, joga pra index)
-          carregarCarrinhoDaSessao(); // 3. Se a pessoa já tinha algo no carrinho (ex: foi pra tela de resumo e voltou), a gente restaura na tela
-      };
-    </script>
-  </body>
+
+    <!-- Título da seção de navegação -->
+    <p class="sidebar-nav-title">Categorias</p>
+
+    <!-- Botões de categoria (gerado pelo JS) -->
+    <nav class="sidebar-nav" id="nav-categorias">
+      <button class="cat-btn ativo" id="cat-btn-todos" onclick="filtrarPorCategoria('todos')">
+        Todos os Materiais
+      </button>
+      <!-- Categorias dinâmicas são inseridas aqui pelo JS -->
+    </nav>
+
+    <!-- Rodapé: Sair -->
+    <div class="sidebar-footer">
+      <!-- Elemento oculto mantido para compatibilidade com o JS (verificarSessaoCliente) -->
+      <span id="display-cliente-nome" class="hidden"></span>
+      <button onclick="reiniciarTotem()"
+        class="flex items-center gap-2 text-red-500 font-black text-sm tracking-widest uppercase hover:text-red-600 transition-colors bg-transparent border-none cursor-pointer w-full justify-center py-2">
+        <i data-lucide="door-open" class="w-5 h-5"></i>
+        SAIR
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============================================
+       ÁREA CENTRAL (Busca + Produtos + Carrinho)
+       ============================================ -->
+  <main class="flex-1 flex flex-col overflow-hidden relative">
+
+    <!-- Barra de Pesquisa e Título -->
+    <header class="pt-4 px-6 pb-2 flex-shrink-0 bg-slate-50 z-20">
+      <h2 id="titulo-categoria" class="text-2xl font-black text-blue-900 mt-1 mb-3 tracking-tight">
+        Todos os Materiais
+      </h2>
+
+      <div class="relative group w-full">
+        <i data-lucide="search"
+          class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-900 transition-colors w-5 h-5"></i>
+        <input id="search-catalogo" type="text" placeholder="O que você está procurando hoje?"
+          class="w-full pl-12 pr-4 py-3 border-2 border-slate-200 bg-white text-blue-900 shadow-sm rounded-xl text-base focus:border-blue-900 outline-none transition-all placeholder-slate-400 font-medium"
+          oninput="filtrarCatalogo(this.value)" />
+      </div>
+    </header>
+
+    <!-- Grid de Produtos (scrollável) -->
+    <div class="flex-1 overflow-y-auto px-4 md:px-6 pb-4 custom-scrollbar" id="main-content">
+      <!-- Loading spinner -->
+      <div id="loading-produtos" class="flex flex-col items-center justify-center py-20 text-blue-900">
+        <i data-lucide="loader-2" class="w-8 h-8 animate-spin mb-4"></i>
+        <p class="font-bold">Carregando catálogo...</p>
+      </div>
+
+      <div id="grid-catalogo" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 md:gap-4 hidden"></div>
+    </div>
+
+    <!-- ============================================
+         BARRA INFERIOR DO CARRINHO
+         ============================================ -->
+    <div class="cart-bar z-30">
+      <div class="cart-left">
+        <div>
+          <p class="cart-label">Total do pedido</p>
+          <p class="cart-total">R$ <span id="cart-total-rodape">0.00</span></p>
+        </div>
+      </div>
+
+      <button class="cart-btn" onclick="irParaPagamento()">
+        <div class="cart-icon-wrap" id="icone-carrinho-rodape">
+          <i data-lucide="shopping-cart" style="width:24px;height:24px;color:#1e3a8a;"></i>
+        </div>
+        VER CARRINHO
+        <span id="cart-badge-rodape" class="hidden">0</span>
+      </button>
+    </div>
+  </main>
+
+  <script src="js/supabase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    lucide.createIcons();
+
+    // ==========================================
+    // 🧠 INICIALIZAÇÃO DA TELA (window.onload)
+    // ==========================================
+    window.onload = function () {
+      carregarSessao();              // 1. Carrega estado da sessão (carrinho, cliente se houver)
+      carregarProdutosDoBanco();     // 2. Vai no Supabase baixar os produtos
+      carregarCarrinhoDaSessao();    // 3. Restaura carrinho na tela
+      iniciarTimerInatividade();     // 4. Ativa timer de inatividade (30s)
+    };
+  </script>
+</body>
+
 </html>

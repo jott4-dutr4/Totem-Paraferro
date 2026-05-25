@@ -24,6 +24,7 @@
     <!-- SUPABASE CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="css/output.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="
     text-blue-900
@@ -238,7 +239,7 @@
     <script>
       lucide.createIcons();
       window.onload = function() {
-          verificarSessaoCliente();
+          carregarSessao(); // Carrega estado da sessão (suporta Consumidor Final)
           // Preenche os dados visuais baseados na sessão ANTES dela ser zerada
           gerarNotaVisual();
       };

@@ -1,0 +1,351 @@
+<!-- 
+  📄 ARQUIVO: identificacao.html
+  🧠 PROPÓSITO: Tela de identificação do cliente (pós-carrinho).
+  
+  Aparece após o cliente clicar em "Gerar Pedido" no resumo.
+  O cliente pode informar CPF para acumular pontos / emitir NFC-e,
+  ou continuar como "Consumidor Final" sem se identificar.
+-->
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Totem Paraferro - Identificação</title>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="css/output.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #f8fafc;
+        /* 100dvh: respeita a barra de endereço do celular em landscape */
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        user-select: none;
+      }
+
+      /* ══════════════════════════════════════════
+         CABEÇALHO: Logo sempre visível no topo
+      ══════════════════════════════════════════ */
+      .id-header {
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 10px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;                   /* nunca encolhe */
+        box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+      }
+      .id-header img {
+        /* vh em vez de px: a logo escala junto com a altura da tela */
+        height: clamp(32px, 5vh, 54px);
+        width: auto;
+        object-fit: contain;
+      }
+
+      /* ══════════════════════════════════════════
+         CORPO: scrollável quando necessário (landscape)
+      ══════════════════════════════════════════ */
+      .id-body {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* justify-content: center centraliza quando cabe; rola quando não cabe */
+        justify-content: center;
+        padding: clamp(10px, 3vh, 28px) clamp(16px, 4vw, 24px);
+      }
+
+      /* ══════════════════════════════════════════
+         CARD DE IDENTIFICAÇÃO
+      ══════════════════════════════════════════ */
+      .id-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.07);
+        /* Padding responsivo usando vh para se adaptar à altura */
+        padding: clamp(18px, 3.5vh, 44px) clamp(20px, 5vw, 40px);
+        width: 100%;
+        max-width: 480px;
+        /* Margem vertical para o scroll no landscape funcionar */
+        margin: 8px 0;
+        animation: fadeInCard 0.35s ease both;
+      }
+      @keyframes fadeInCard {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* ══════════════════════════════════════════
+         ÍCONE (encolhe em landscape automaticamente)
+      ══════════════════════════════════════════ */
+      .id-icon {
+        width:  clamp(40px, 7vh, 72px);
+        height: clamp(40px, 7vh, 72px);
+        background: #dbeafe;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto clamp(10px, 2vh, 20px);
+      }
+      .id-icon svg {
+        width:  clamp(20px, 3.5vh, 32px);
+        height: clamp(20px, 3.5vh, 32px);
+        color: #1e3a8a;
+      }
+
+      /* ══════════════════════════════════════════
+         TEXTOS
+      ══════════════════════════════════════════ */
+      .id-title {
+        font-size: clamp(17px, 3.5vh, 26px);
+        font-weight: 900;
+        color: #1e3a8a;
+        text-align: center;
+        margin-bottom: clamp(4px, 1vh, 8px);
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+      }
+      .id-subtitle {
+        font-size: clamp(11px, 1.8vh, 14px);
+        color: #64748b;
+        text-align: center;
+        margin-bottom: clamp(14px, 2.5vh, 28px);
+        font-weight: 500;
+        line-height: 1.5;
+      }
+
+      /* ══════════════════════════════════════════
+         CAMPO CPF
+      ══════════════════════════════════════════ */
+      .id-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #1e3a8a;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+      }
+      .id-input {
+        width: 100%;
+        border: 2px solid #cbd5e1;
+        background: #f8fafc;
+        color: #1e3a8a;
+        border-radius: 14px;
+        padding: clamp(10px, 2vh, 18px) 20px;
+        font-size: clamp(18px, 3.5vh, 22px);
+        font-weight: 700;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: 2px;
+        text-align: center;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        margin-bottom: 6px;
+      }
+      .id-input:focus {
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 4px rgba(30,58,138,0.1);
+        background: white;
+      }
+      .id-input::placeholder { color: #cbd5e1; font-weight: 400; letter-spacing: 1px; }
+
+      /* ══════════════════════════════════════════
+         BOTÃO PRINCIPAL: Continuar
+      ══════════════════════════════════════════ */
+      .btn-continuar {
+        width: 100%;
+        background: #1e3a8a;
+        color: white;
+        font-size: clamp(14px, 2.8vh, 17px);
+        font-weight: 800;
+        padding: clamp(12px, 2.5vh, 18px);
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        margin-top: clamp(10px, 2vh, 18px);
+        transition: background 0.2s, transform 0.1s;
+        font-family: 'Inter', sans-serif;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn-continuar:hover   { background: #1d4ed8; }
+      .btn-continuar:active  { transform: scale(0.98); }
+      .btn-continuar:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+
+      /* ══════════════════════════════════════════
+         DIVISOR OU
+      ══════════════════════════════════════════ */
+      .id-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: clamp(10px, 2vh, 18px) 0;
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .id-divider::before,
+      .id-divider::after {
+        content: ''; flex: 1; height: 1px; background: #e2e8f0;
+      }
+
+      /* ══════════════════════════════════════════
+         BOTÃO SECUNDÁRIO: Continuar sem CPF
+      ══════════════════════════════════════════ */
+      .btn-sem-cpf {
+        width: 100%;
+        background: white;
+        color: #475569;
+        font-size: clamp(13px, 2.5vh, 15px);
+        font-weight: 700;
+        padding: clamp(10px, 2vh, 16px);
+        border-radius: 14px;
+        border: 2px solid #e2e8f0;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s, transform 0.1s;
+        font-family: 'Inter', sans-serif;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .btn-sem-cpf:hover  { background: #f1f5f9; border-color: #cbd5e1; }
+      .btn-sem-cpf:active { transform: scale(0.98); }
+
+      /* ══════════════════════════════════════════
+         RODAPÉ: Voltar + indicador de etapa
+      ══════════════════════════════════════════ */
+      .id-footer {
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        padding: clamp(8px, 1.5vh, 16px) clamp(16px, 4vw, 32px);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+        flex-shrink: 0;
+      }
+      .btn-voltar {
+        background: #f1f5f9;
+        color: #1e3a8a;
+        font-size: 13px;
+        font-weight: 800;
+        padding: 9px 18px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        font-family: 'Inter', sans-serif;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .btn-voltar:hover  { background: #e2e8f0; }
+      .btn-voltar:active { transform: scale(0.97); }
+    </style>
+  </head>
+
+  <body>
+
+    <!-- ── Cabeçalho ── -->
+    <header class="id-header">
+      <img src="https://i.postimg.cc/RCfJNQY9/logoparaferro.png" alt="Logo Paraferro" />
+    </header>
+
+    <!-- ── Corpo principal (scrollável) ── -->
+    <main class="id-body">
+      <div class="id-card">
+
+        <!-- Ícone -->
+        <div class="id-icon">
+          <i data-lucide="user-check" style="color:#1e3a8a;"></i>
+        </div>
+
+        <h1 class="id-title">Já tem cadastro conosco?</h1>
+        <p class="id-subtitle">
+          Informe seu CPF para agilizar a emissão da NFC-e<br>e acumular benefícios.
+        </p>
+
+        <!-- Campo CPF -->
+        <label class="id-label" for="input-cpf-identificacao">Número do CPF</label>
+        <input
+          type="tel"
+          id="input-cpf-identificacao"
+          class="id-input"
+          placeholder="000.000.000-00"
+          maxlength="14"
+          oninput="mascaraCPF(this)"
+          onkeydown="if(event.key==='Enter') verificarCPFIdentificacao()"
+          autocomplete="off"
+        />
+
+        <!-- Botão principal -->
+        <button
+          id="btn-continuar-identificacao"
+          class="btn-continuar"
+          onclick="verificarCPFIdentificacao()"
+        >
+          Continuar
+        </button>
+
+        <!-- Divisor -->
+        <div class="id-divider">ou</div>
+
+        <!-- Botão sem CPF -->
+        <button
+          id="btn-sem-cpf"
+          class="btn-sem-cpf"
+          onclick="continuarSemCPF()"
+        >
+          <i data-lucide="arrow-right-circle" style="width:20px;height:20px;"></i>
+          Continuar sem CPF
+        </button>
+
+      </div>
+    </main>
+
+    <!-- ── Rodapé com botão Voltar ── -->
+    <footer class="id-footer">
+      <button class="btn-voltar" onclick="window.location.href='resumo.html'">
+        <i data-lucide="arrow-left" style="width:16px;height:16px;"></i>
+        Voltar
+      </button>
+      <span style="font-size:11px;color:#94a3b8;font-weight:600;letter-spacing:0.5px;">
+        Etapa 3 de 4 · Identificação
+      </span>
+    </footer>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+      lucide.createIcons();
+      window.onload = function() {
+        carregarSessao();          // Garante que o carrinho está disponível
+        iniciarTimerInatividade(); // Ativa o timer de inatividade
+      };
+    </script>
+  </body>
+</html>
